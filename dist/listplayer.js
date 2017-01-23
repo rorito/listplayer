@@ -94,28 +94,28 @@ var ListPlayer = function (_EventEmitter) {
   _inherits(ListPlayer, _EventEmitter);
 
   // eslint-disable-line
-
   function ListPlayer() {
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     _classCallCheck(this, ListPlayer);
 
-    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ListPlayer).call(this));
+    var _this = _possibleConstructorReturn(this, (ListPlayer.__proto__ || Object.getPrototypeOf(ListPlayer)).call(this));
 
     _this.tracks = (options.tracks || []).map(function (t) {
       if (typeof t === 'string') return { src: t };
       return t;
     });
-    _this.loopTracks = options.loopTracks || true;
-    _this.progressThroughTracks = options.progressThroughTracks || true;
+    _this.loopTracks = options.loopTracks !== undefined ? options.loopTracks : true;
+    _this.progressThroughTracks = options.progressThroughTracks !== undefined ? options.progressThroughTracks : true;
     _this.el = _this._injectAudioElement();
     _this.index = 0;
     _this._loadTrack();
-    if (_this.progressThroughTracks) {
-      _this.el.addEventListener('ended', function () {
-        _this.next();_this.play();
-      });
-    }
+    _this.el.addEventListener('ended', function () {
+      if (_this.progressThroughTracks) {
+        _this.next();
+        _this.play();
+      }
+    });
     if (_this.advanced) _this._loadAudioContext();
     return _this;
   }
@@ -203,12 +203,13 @@ var ListPlayer = function (_EventEmitter) {
     key: '_loadTrack',
     value: function _loadTrack() {
       if (this._loadedTrack === this.index) return;
+      if (this.tracks.length === 0) return;
       this.el.innerHTML = '';
 
       this.currentTrack = this.tracks[this.index];
       var source = document.createElement('source');
       source.src = this.currentTrack.src;
-      source.type = 'audio/mp3';
+      source.type = this.currentTrack.type || 'audio/mp3';
 
       this.el.appendChild(source);
       this.el.load();
